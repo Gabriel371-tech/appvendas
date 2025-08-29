@@ -12,7 +12,29 @@ export default function LoginScreen({ navigation }: { navigation: NavProp }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+    // Função para validar o email(Usando REGEX)
+  const isEmailValid = (email: string) => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return emailRegex.test(email);
+  };
+
+  // Função para validar a senha (A senha tem que ter mais 6 caracter)
+  const isPasswordValid = (password: string) => {
+    return password.length >= 6;
+  };
+
   const handleLogin = () => {
+    if (!isEmailValid(email)) {
+      Alert.alert("Erro", "Por favor, insira um e-mail válido.");
+      return;
+    }
+
+    if (!isPasswordValid(password)) {
+      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    // Verifica se o e-mail e senha são válidos para login
     if (email === "admin@barbearia.com" && password === "123456") {
       navigation.navigate("Home");
     } else {
@@ -57,31 +79,41 @@ export default function LoginScreen({ navigation }: { navigation: NavProp }) {
       <TouchableOpacity onPress={() => Alert.alert("Recuperação de senha")} style={styles.forgotPassword}>
         <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
       </TouchableOpacity>
+
+      {/* Não tem conta? Crie uma*/}
+      <TouchableOpacity onPress={() => Alert.alert("Recuperação de senha")} style={styles.haveAccount}>
+        <Text style={styles.forgotPasswordText}>Não tem conta? Crie uma</Text>
+      </TouchableOpacity>
+
     </View>
+
+    
+  
   );
 }
 
 const styles = StyleSheet.create({
+// Container principal da tela
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    flex: 1, // Container principal da tela
+    justifyContent: "center",  // Centraliza conteúdo verticalmente
+    alignItems: "center", // Centraliza conteúdo horizontalmente
     paddingHorizontal: 20,
-    backgroundColor: "#F4F4F9", // Fundo mais suave, com tom pastel
+    backgroundColor: "#F4F4F9",
   },
   title: {
-    fontSize: 28, // Aumentamos o título para torná-lo mais chamativo
+    fontSize: 25,
     fontWeight: "bold",
-    color: "#2C3E50", // Um tom de cinza escuro com um toque de azul
+    color: "#2C3E50",
     marginBottom: 40,
   },
   inputContainer: {
-    width: width - 40,
+    width: width - 50,
     height: 50,
     marginBottom: 20,
     backgroundColor: "#fff",
     borderRadius: 10,
-    elevation: 5, // Elevação para dar um efeito de sombra sutil
+    elevation: 5,
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: 15,
@@ -94,12 +126,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   inputIcon: {
-    marginRight: 10, // Espaço entre o ícone e o texto
+    marginRight: 10,
   },
   button: {
-    width: width - 40,
+    width: width - 50,
     height: 50,
-    backgroundColor: "#03090e", // Azul mais intenso e moderno
+    backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
@@ -115,7 +147,15 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   forgotPasswordText: {
-    color: "#4690ff", // Cor do link de "Esqueci minha senha"
+    color: "#3498DB",
     fontSize: 14,
   },
+  haveAccount: {
+    marginTop: 15,
+  },
+  haveAccountText: {
+    color: "#3498DB",
+    fontSize: 14,
+  }
 });
+
