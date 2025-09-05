@@ -7,7 +7,8 @@ import LoginScreen from "../../src/screens/LoginScreen";
 export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
-  Register: undefined; // <-- adiciona aqui
+  Register: undefined;
+  Dash: undefined;
 
 };
  
@@ -19,6 +20,7 @@ export default function RootStack() {
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="Dash" component={DashboardScreen} />
     </Stack.Navigator>
   );
 }

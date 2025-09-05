@@ -47,7 +47,7 @@ export default function LoginScreen() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate("Home"); // Navega para tela Home após login
+      navigation.navigate("Dash"); // Navega para tela Home após login
     } catch (error: any) {
       console.error(error);
       Alert.alert("Erro", "E-mail ou senha incorretos.");
