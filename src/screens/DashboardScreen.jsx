@@ -1,7 +1,7 @@
 // DashboardScreen.tsx
 import { signOut } from "firebase/auth";
 import { Button, Text, View } from "react-native";
-import { auth } from "./firebaseConfig";
+import { auth } from "../services/connectionFirebase";
 
 export default function DashboardScreen({ navigation }) {
   const handleLogout = async () => {

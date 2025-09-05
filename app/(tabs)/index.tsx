@@ -1,6 +1,7 @@
 import RegisterScreen from "@/src/screens/RegisterScreen";
 import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
+import DashboardScreen from "../../src/screens/DashBoardScreen";
 import HomeScreen from "../../src/screens/HomeScreen";
 import LoginScreen from "../../src/screens/LoginScreen";
  
