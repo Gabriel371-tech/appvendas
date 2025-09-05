@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Centraliza conteúdo verticalmente
     alignItems: "center", // Centraliza conteúdo horizontalmente
     paddingHorizontal: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#d1d1d1",
   },
 
   Header: {
