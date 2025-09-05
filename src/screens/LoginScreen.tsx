@@ -1,29 +1,40 @@
 import { RootStackParamList } from "@/app/(tabs)";
-import { FontAwesome5 } from '@expo/vector-icons'; // Para ícones (se não tiver o pacote, instale com `expo install @expo/vector-icons`)
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { Alert, Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { auth } from "../services/connectionFirebase"; // Ajuste o caminho conforme seu projeto
 
 const { width } = Dimensions.get("window");
 
-type NavProp = StackNavigationProp<RootStackParamList>;
+type NavProp = StackNavigationProp<RootStackParamList, "Login">;
 
-export default function LoginScreen({ navigation }: { navigation: NavProp }) {
+export default function LoginScreen() {
+  const navigation = useNavigation<NavProp>();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-    // Função para validar o email(Usando REGEX)
   const isEmailValid = (email: string) => {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return emailRegex.test(email);
   };
 
-  // Função para validar a senha (A senha tem que ter mais 6 caracter)
   const isPasswordValid = (password: string) => {
     return password.length >= 6;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!isEmailValid(email)) {
       Alert.alert("Erro", "Por favor, insira um e-mail válido.");
       return;
@@ -34,11 +45,12 @@ export default function LoginScreen({ navigation }: { navigation: NavProp }) {
       return;
     }
 
-    // Verifica se o e-mail e senha são válidos para login
-    if (email === "admin@barbearia.com" && password === "123456") {
-      navigation.navigate("Home");
-    } else {
-      Alert.alert("Erro", "E-mail ou senha inválidos.");
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigation.navigate("Home"); // Navega para tela Home após login
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert("Erro", "E-mail ou senha incorretos.");
     }
   };
 
@@ -46,7 +58,7 @@ export default function LoginScreen({ navigation }: { navigation: NavProp }) {
     <View style={styles.container}>
       <Text style={styles.title}>Bem-vindo à Barbearia</Text>
 
-      {/* Campo de E-mail */}
+      {/* E-mail */}
       <View style={styles.inputContainer}>
         <FontAwesome5 name="envelope" size={20} color="#ccc" style={styles.inputIcon} />
         <TextInput
@@ -55,10 +67,11 @@ export default function LoginScreen({ navigation }: { navigation: NavProp }) {
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          autoCapitalize="none"
         />
       </View>
 
-      {/* Campo de Senha */}
+      {/* Senha */}
       <View style={styles.inputContainer}>
         <FontAwesome5 name="lock" size={20} color="#ccc" style={styles.inputIcon} />
         <TextInput
@@ -70,34 +83,29 @@ export default function LoginScreen({ navigation }: { navigation: NavProp }) {
         />
       </View>
 
-      {/* Botão de Login */}
+      {/* Botão de login */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
 
-      {/* Esqueci a Senha */}
-      <TouchableOpacity onPress={() => Alert.alert("Recuperação de senha")} style={styles.forgotPassword}>
+      {/* Esqueci minha senha */}
+      <TouchableOpacity onPress={() => Alert.alert("Recuperação de senha em breve")}>
         <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
       </TouchableOpacity>
 
-      {/* Não tem conta? Crie uma*/}
-      <TouchableOpacity onPress={() => Alert.alert("Recuperação de senha")} style={styles.haveAccount}>
+      {/* Criar conta */}
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={styles.forgotPasswordText}>Não tem conta? Crie uma</Text>
       </TouchableOpacity>
-
     </View>
-
-    
-  
   );
 }
 
 const styles = StyleSheet.create({
-// Container principal da tela
   container: {
-    flex: 1, // Container principal da tela
-    justifyContent: "center",  // Centraliza conteúdo verticalmente
-    alignItems: "center", // Centraliza conteúdo horizontalmente
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 20,
     backgroundColor: "#F4F4F9",
   },
@@ -131,7 +139,7 @@ const styles = StyleSheet.create({
   button: {
     width: width - 50,
     height: 50,
-    backgroundColor: "#000000",
+    backgroundColor: "#000",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
@@ -143,19 +151,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  forgotPassword: {
-    marginTop: 15,
-  },
   forgotPasswordText: {
     color: "#3498DB",
     fontSize: 14,
-  },
-  haveAccount: {
     marginTop: 15,
   },
-  haveAccountText: {
-    color: "#3498DB",
-    fontSize: 14,
-  }
 });
-

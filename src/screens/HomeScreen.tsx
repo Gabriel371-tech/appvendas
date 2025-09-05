@@ -1,6 +1,6 @@
 import { RootStackParamList } from "@/app/(tabs)";
+import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "expo-router";
 import {
   Dimensions,
   Image,

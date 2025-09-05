@@ -8,14 +8,14 @@ import { auth, database } from "../services/connectionFirebase";
 import React, { useState } from "react";
  
 import {
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { RootStackParamList } from "../../app/(tabs)/index";
  
