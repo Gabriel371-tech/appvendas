@@ -150,7 +150,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#EAF2F8", // fundo suave
     justifyContent: "center",
     alignItems: "center",
   },
@@ -158,13 +158,18 @@ const styles = StyleSheet.create({
     width: width * 0.85,
     padding: 30,
     borderRadius: 25,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "#FFFFFF", // card branco
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   title: {
     fontSize: 32,
     fontWeight: "700",
-    color: "#fff",
+    color: "#333", // cinza escuro
     marginBottom: 20,
     textAlign: "center",
   },
@@ -172,8 +177,8 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: 14,
     paddingHorizontal: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    color: "#fff",
+    backgroundColor: "#F0F0F0", // campo cinza claro
+    color: "#333", // texto escuro
     borderRadius: 15,
     marginBottom: 15,
     fontSize: 16,
@@ -187,10 +192,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorBox: {
-    backgroundColor: '#ff3b3b',
+    backgroundColor: '#F56262', // vermelho claro
   },
   successBox: {
-    backgroundColor: '#4cd964',
+    backgroundColor: '#34C759', // verde sucesso iOS
   },
   messageText: {
     color: '#fff',
@@ -204,16 +209,16 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: 16,
     borderRadius: 20,
-    backgroundColor: "#FF512F",
+    backgroundColor: "#007AFF", // azul moderno
     marginTop: 10,
   },
   buttonText: {
-    color: "#fff",
+    color: "#FFFFFF", // branco
     fontSize: 18,
     fontWeight: "bold",
   },
   linkText: {
-    color: "#fff",
+    color: "#007AFF", // azul também
     fontSize: 14,
     textDecorationLine: "underline",
   },
