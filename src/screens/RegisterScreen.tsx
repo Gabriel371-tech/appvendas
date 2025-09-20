@@ -24,6 +24,9 @@ export default function RegisterScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cidade, setCidade] = useState(""); // Novo campo de cidade
+
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
@@ -41,7 +44,7 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setMessage("");
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !telefone || !cidade) {  // Verificação de campos obrigatórios
       showMessage("Preencha todos os campos!", true);
       return;
     }
@@ -65,6 +68,8 @@ export default function RegisterScreen() {
           uid: user.uid,
           name: name,
           email: email,
+          telefone: telefone,  // Adicionando telefone
+          cidade: cidade,      // Adicionando cidade
           createdAt: new Date().toISOString(),
         });
       }
@@ -117,6 +122,23 @@ export default function RegisterScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Telefone"
+            placeholderTextColor="rgba(0,0,0,0.4)"
+            value={telefone}
+            onChangeText={setTelefone}
+            keyboardType="phone-pad"
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Cidade"
+            placeholderTextColor="rgba(0,0,0,0.4)"
+            value={cidade}
+            onChangeText={setCidade}
           />
 
           {message ? (

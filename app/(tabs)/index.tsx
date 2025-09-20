@@ -1,3 +1,4 @@
+import PerfilScreen from "@/src/screens/PerfilScreen";
 import RegisterScreen from "@/src/screens/RegisterScreen";
 import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
@@ -10,7 +11,7 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Dash: undefined;
-
+  Perfil: undefined;
 };
  
 const Stack = createStackNavigator<RootStackParamList>();
@@ -22,6 +23,7 @@ export default function RootStack() {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="Dash" component={DashboardScreen} />
+      <Stack.Screen name="Perfil" component={PerfilScreen} />
     </Stack.Navigator>
   );
 }

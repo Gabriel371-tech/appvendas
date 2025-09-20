@@ -1,7 +1,14 @@
-// DashboardScreen.tsx
+import { Ionicons } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
 import React from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+import {
+  Button,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { auth } from "../services/connectionFirebase";
 
 export default function DashboardScreen({ navigation }) {
@@ -16,6 +23,25 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* HEADER CUSTOMIZADO */}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("@/assets/images/logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Perfil")}
+          style={styles.profileIcon}
+        >
+          <Ionicons name="person-circle-outline" size={32} color="#333" />
+        </TouchableOpacity>
+      </View>
+
+      {/* CONTEÚDO */}
       <View style={styles.card}>
         <Text style={styles.title}>🎉 Bem-vindo à Dashboard!</Text>
         <Text style={styles.subtitle}>Você está logado com sucesso.</Text>
@@ -23,16 +49,43 @@ export default function DashboardScreen({ navigation }) {
           <Button title="Sair" onPress={handleLogout} color="#d9534f" />
         </View>
       </View>
+      
+       <View style={styles.footer}>
+
     </View>
-  );
-}
+    </View>
+
+    
+   
+  )
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f0f4f8",
-    justifyContent: "center",
+  },
+
+  header: {
+    height: 60,
+    backgroundColor: "#fff",
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logo: {
+    width: 100,
+    height: 30,
+  },
+  profileIcon: {
+    padding: 5,
   },
   card: {
     backgroundColor: "#ffffff",
@@ -44,7 +97,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     alignItems: "center",
-    width: "85%",
+    margin: 20,
   },
   title: {
     fontSize: 22,
@@ -62,4 +115,16 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 10,
   },
+
+  footer: {
+    bottom: 0,
+    height: 60,
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  }
 });
