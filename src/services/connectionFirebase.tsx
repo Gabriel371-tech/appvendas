@@ -1,8 +1,7 @@
-// Importa funções específicas do SDK modular
+// connectionFirebase.ts
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth'; // Exemplo para autenticação
-import { getDatabase } from 'firebase/database'; // Exemplo para o Realtime Database
-import { getFirestore } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAP8fd4N7IxMzx-Q9Q8lMhf4ZgWx2oWw44",
@@ -13,19 +12,10 @@ const firebaseConfig = {
   appId: "1:595730493377:web:7641022629bf43839e8940",
   measurementId: "G-EKZK8LDRB4"
 };
- 
-// Inicializa o Firebase
+
 const app = initializeApp(firebaseConfig);
 
-
-const db = getFirestore(app);
-
- 
-// Inicializa e exporta serviços
 export const auth = getAuth(app);
-export const database = getDatabase(app);
+export const db = getDatabase(app);  // <- aqui está o Realtime Database
 
-
-// Se precisar do app em outro lugar, pode exportá-lo também
 export default app;
-

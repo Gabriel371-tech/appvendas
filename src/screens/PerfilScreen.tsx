@@ -1,13 +1,16 @@
+import { RootStackParamList } from '@/app/(tabs)'; // Ajuste o caminho
+import { auth, db } from '@/src/services/connectionFirebase';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { doc, getDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
-import { RootStackParamList } from "../../app/(tabs)/index"; // <-- ajuste o caminho conforme sua estrutura
+import { get, ref } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
 
+type PerfilScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Perfil'>;
 
+export default function PerfilScreen() {
+  const navigation = useNavigation<PerfilScreenNavigationProp>();
 
-
-export default function PerfilScreen  (){
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,16 +19,16 @@ export default function PerfilScreen  (){
       try {
         const user = auth.currentUser;
         if (user) {
-          const userDocRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(userDocRef);
-          if (docSnap.exists()) {
-            setUserData(docSnap.data());
+          const userRef = ref(db, `users/${user.uid}`);
+          const snapshot = await get(userRef);
+          if (snapshot.exists()) {
+            setUserData(snapshot.val());
           } else {
-            console.log("No such document!");
+            console.log('Nenhum dado encontrado!');
           }
         }
       } catch (error) {
-        console.error("Erro ao buscar dados do usuário:", error);
+        console.error('Erro ao buscar dados do usuário:', error);
       } finally {
         setLoading(false);
       }
@@ -37,9 +40,9 @@ export default function PerfilScreen  (){
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigation.replace("Login");
+      navigation.replace('Login');
     } catch (error) {
-      console.error("Erro ao sair:", error);
+      console.error('Erro ao sair:', error);
     }
   };
 
@@ -59,50 +62,50 @@ export default function PerfilScreen  (){
           <Text style={styles.text}>Nome: {userData.name}</Text>
           <Text style={styles.text}>E-mail: {userData.email}</Text>
           <Text style={styles.text}>Cidade: {userData.cidade}</Text>
-          <Text style={styles.text}>Telefone: {userData.telefone}</Text>
-          <Button title="Sair" onPress={handleLogout} color="#d9534f" />
+          <Text style={styles.text}>Telefone: {userData.telefone}</Text><br />
+          <Button title="Sair" onPress={handleLogout} color="#d9534f" /><br />
+          <Button title="Editar Perfil" onPress={() => navigation.navigate('EditProfile')} />
+
         </View>
       ) : (
         <Text style={styles.text}>Nenhum dado encontrado.</Text>
       )}
     </View>
   );
-};
-
-
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f4f8",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#f0f4f8',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 12,
     elevation: 5,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    alignItems: "center",
+    alignItems: 'center',
     margin: 20,
-    width: "80%",
+    width: '80%',
   },
   title: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   text: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
     marginBottom: 5,
   },
   loadingText: {
     fontSize: 18,
-    color: "#666",
+    color: '#666',
   },
 });

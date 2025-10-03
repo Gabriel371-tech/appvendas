@@ -14,7 +14,7 @@ import {
   View
 } from "react-native";
 import { RootStackParamList } from "../../app/(tabs)/index";
-import { auth, database } from "../services/connectionFirebase";
+import { auth, db } from "../services/connectionFirebase";
 
 type NavProp = StackNavigationProp<RootStackParamList>;
 
@@ -25,7 +25,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [cidade, setCidade] = useState(""); // Novo campo de cidade
+  const [cidade, setCidade] = useState("");
 
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -44,7 +44,7 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setMessage("");
 
-    if (!name || !email || !password || !telefone || !cidade) {  // Verificação de campos obrigatórios
+    if (!name || !email || !password || !telefone || !cidade) {
       showMessage("Preencha todos os campos!", true);
       return;
     }
@@ -64,12 +64,12 @@ export default function RegisterScreen() {
       const user = userCredential.user;
 
       if (user) {
-        await set(ref(database, 'users/' + user.uid), {
+        await set(ref(db, 'users/' + user.uid), {
           uid: user.uid,
-          name: name,
-          email: email,
-          telefone: telefone,  // Adicionando telefone
-          cidade: cidade,      // Adicionando cidade
+          name,
+          email,
+          telefone,
+          cidade,
           createdAt: new Date().toISOString(),
         });
       }
