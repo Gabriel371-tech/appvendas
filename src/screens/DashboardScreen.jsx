@@ -51,7 +51,6 @@ export default function DashboardScreen({ navigation }) {
       </View>
 
       {/* Footer */}
-      <View style={styles.footer}></View>
     </View>
   );
 }
@@ -113,6 +112,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     bottom: 0,
+    margin: 0,
     height: 60,
     backgroundColor: "#fff",
     flexDirection: "row",
