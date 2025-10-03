@@ -2,7 +2,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth'; // Exemplo para autenticação
 import { getDatabase } from 'firebase/database'; // Exemplo para o Realtime Database
- 
+import { getFirestore } from "firebase/firestore";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAP8fd4N7IxMzx-Q9Q8lMhf4ZgWx2oWw44",
   authDomain: "appvendas-e5a34.firebaseapp.com",
@@ -15,10 +16,16 @@ const firebaseConfig = {
  
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
+
+
+const db = getFirestore(app);
+
  
 // Inicializa e exporta serviços
 export const auth = getAuth(app);
 export const database = getDatabase(app);
- 
+
+
 // Se precisar do app em outro lugar, pode exportá-lo também
 export default app;
+

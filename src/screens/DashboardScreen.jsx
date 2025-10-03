@@ -23,7 +23,7 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* HEADER CUSTOMIZADO */}
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
@@ -49,16 +49,12 @@ export default function DashboardScreen({ navigation }) {
           <Button title="Sair" onPress={handleLogout} color="#d9534f" />
         </View>
       </View>
-      
-       <View style={styles.footer}>
 
+      {/* Footer */}
+      <View style={styles.footer}></View>
     </View>
-    </View>
-
-    
-   
-  )
-};
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -115,7 +111,6 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 10,
   },
-
   footer: {
     bottom: 0,
     height: 60,
@@ -126,5 +121,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
-  }
+  },
 });
