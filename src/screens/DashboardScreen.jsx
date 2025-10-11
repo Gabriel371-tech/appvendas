@@ -1,13 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
-import React from "react";
 import {
   Button,
   Image,
   StyleSheet,
-  Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { auth } from "../services/connectionFirebase";
 
@@ -41,14 +39,14 @@ export default function DashboardScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* CONTEÚDO */}
-      <View style={styles.card}>
-        <Text style={styles.title}>🎉 Bem-vindo à Dashboard!</Text>
-        <Text style={styles.subtitle}>Você está logado com sucesso.</Text>
-        <View style={styles.buttonContainer}>
-          <Button title="Sair" onPress={handleLogout} color="#d9534f" />
-        </View>
+    <View style={styles.buttonContainer}>
+      <Button
+        title="Agendar Cliente"
+        onPress={() => navigation.navigate("Agendar")}
+        color="#0275d8"
+      />
       </View>
+
 
       {/* Footer */}
     </View>

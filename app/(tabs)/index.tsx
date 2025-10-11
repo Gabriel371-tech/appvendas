@@ -2,11 +2,10 @@ import EditProfileScreen from "@/src/screens/EditProfileScreen";
 import PerfilScreen from "@/src/screens/PerfilScreen";
 import RegisterScreen from "@/src/screens/RegisterScreen";
 import { createStackNavigator } from "@react-navigation/stack";
-import React from "react";
+import AgendarScreen from "../../src/screens/AgendarScreen";
 import DashboardScreen from "../../src/screens/DashBoardScreen";
 import HomeScreen from "../../src/screens/HomeScreen";
 import LoginScreen from "../../src/screens/LoginScreen";
- 
 export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
@@ -14,6 +13,7 @@ export type RootStackParamList = {
   Dash: undefined;
   Perfil: undefined;
   EditProfile: undefined;
+  Agendar: undefined;
 };
  
 const Stack = createStackNavigator<RootStackParamList>();
@@ -27,6 +27,7 @@ export default function RootStack() {
       <Stack.Screen name="Dash" component={DashboardScreen} />
       <Stack.Screen name="Perfil" component={PerfilScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="Agendar" component={AgendarScreen} />
     </Stack.Navigator>
   );
 }
