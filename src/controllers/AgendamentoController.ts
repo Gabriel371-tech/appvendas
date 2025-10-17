@@ -1,106 +1,31 @@
-// src/controllers/AgendamentoController.ts
-import { get, onValue, push, ref, remove, update } from 'firebase/database'; // Funções necessárias do Firebase
-import { Agendamento } from '../models/Agendar';
-import { auth, db } from '../services/connectionFirebase'; // Importe a conexão com Firebase
+import { get, ref, set } from "firebase/database"; // Firebase Modular Imports
+import { AgendamentoModel } from "../models/Agendar"; // Certifique-se de ter a model do agendamento
+import { db } from "../services/connectionFirebase"; // Importando o banco de dados configurado
 
 export class AgendamentoController {
-    // Função para agendar o corte de cabelo
-    static agendar(nomeCliente: string, nomeBarbeador: string, nomeCorte: string, data: Date, horario: string): Agendamento | null {
-        if (!nomeCliente || !nomeBarbeador || !nomeCorte || !horario) {
-            return null;
-        }
-
-        // Verifica se o usuário está autenticado
-        const user = auth.currentUser;
-        if (!user) {
-            console.error('Usuário não autenticado!');
-            return null;  // Retorna null caso o usuário não esteja autenticado
-        }
-
-        // Criando o objeto agendamento
-        const agendamento: Agendamento = {
-            data,
-            nomeBarbeador,
-            nomeCorte,
-            horario,
-            nomeCliente,
-        };
-
-        // Referência do Firebase Realtime Database
-        const agendamentoRef = ref(db, 'agendamentos');
-
-        // Salva o agendamento no Realtime Database com push
-        push(agendamentoRef, agendamento)
-            .then(() => {
-                console.log('Agendamento criado no Firebase:', agendamento);
-            })
-            .catch((error) => {
-                console.error('Erro ao criar agendamento no Firebase:', error);
+    // Função para criar um agendamento
+    static async criarAgendamento(agendamento: AgendamentoModel, userId: string): Promise<void> {
+        try {
+            const agendamentosRef = ref(db, `agendamentos/${userId}`);  // Referência para o nó 'agendamentos'
+            const agendamentoId = Date.now().toString();  // Gerar um ID único para o agendamento
+            await set(ref(agendamentosRef, agendamentoId), {
+                nomeCliente: agendamento.nomeCliente,
+                nomeBarbeador: agendamento.nomeBarbeador,
+                nomeCorte: agendamento.nomeCorte,
+                data: agendamento.data.toISOString(),  // Salvar a data no formato ISO
+                horario: agendamento.horario,
             });
-
-        return agendamento;
-    }
-
-    // Função para obter todos os agendamentos
-    static async listarAgendamentos() {
-        const agendamentosRef = ref(db, 'agendamentos');
-        const snapshot = await get(agendamentosRef);
-
-        if (snapshot.exists()) {
-            return snapshot.val();  // Retorna todos os agendamentos
-        } else {
-            console.log('Nenhum agendamento encontado');
-            return null;
+            console.log("Agendamento criado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao criar agendamento:", error);
         }
     }
 
-    // Função para excluir um agendamento
-    static excluirAgendamento(agendamentoId: string) {
-        const agendamentoRef = ref(db, `agendamentos/${agendamentoId}`);
-
-        remove(agendamentoRef)
-            .then(() => {
-                console.log('Agendamento excluído com sucesso');
-            })
-            .catch((error) => {
-                console.error('Erro ao excluir agendamento:', error);
-            });
-    }
-
-    // Função para atualizar um agendamento
-    static atualizarAgendamento(agendamentoId: string, novosDados: Partial<Agendamento>) {
-        const agendamentoRef = ref(db, `agendamentos/${agendamentoId}`);
-
-        update(agendamentoRef, novosDados)
-            .then(() => {
-                console.log('Agendamento atualizado com sucesso');
-            })
-            .catch((error) => {
-                console.error('Erro ao atualizar agendamento:', error);
-            });
-    }
-
-    // Função para ouvir os agendamentos em tempo real
-    static ouvirAgendamentosEmTempoReal() {
-        const agendamentosRef = ref(db, 'agendamentos');
-
-        onValue(agendamentosRef, (snapshot) => {
-            if (snapshot.exists()) {
-                console.log('Agendamentos em tempo real:', snapshot.val());
-            } else {
-                console.log('Nenhum agendamento encontrado');
-            }
-        });
-    }
-
-    // Função para verificar se o usuário está autenticado
-    static verificarAutenticacao(): boolean {
-        const user = auth.currentUser;
-        if (!user) {
-            console.log('Usuário não autenticado');
-            return false;
-        }
-        console.log('Usuário autenticado:', user.uid);
-        return true;
+    // Função para obter os agendamentos
+    static async obterAgendamentos(userId: string): Promise<AgendamentoModel[]> {
+        const agendamentosRef = ref(db, `agendamentos/${userId}`);
+        const snapshot = await get(agendamentosRef);  // Usando get para obter os dados
+        const data = snapshot.val();
+        return data ? Object.values(data) : [];  // Retorna os agendamentos como um array
     }
 }
