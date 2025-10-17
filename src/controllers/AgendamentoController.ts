@@ -49,7 +49,7 @@ export class AgendamentoController {
         if (snapshot.exists()) {
             return snapshot.val();  // Retorna todos os agendamentos
         } else {
-            console.log('Nenhum agendamento encontrado');
+            console.log('Nenhum agendamento encontado');
             return null;
         }
     }
