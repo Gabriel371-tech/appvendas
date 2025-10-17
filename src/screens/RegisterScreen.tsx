@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -9,11 +11,9 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../app/(tabs)/index';
-import { User } from '../models/User';
 import { handleUserRegister } from '../controllers/userController';
+import { User } from '../models/User';
 
 type NavProp = StackNavigationProp<RootStackParamList>;
 

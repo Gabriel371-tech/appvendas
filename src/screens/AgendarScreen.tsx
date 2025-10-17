@@ -1,18 +1,11 @@
-import { RootStackParamList } from '@/app/(tabs)/index'; // importe o caminho correto
+// src/screens/AgendarScreen.tsx
+
+import { RootStackParamList } from '@/app/(tabs)/index';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-
-import {
-    Alert,
-    Button,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { Alert, Button, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AgendamentoController } from '../controllers/AgendamentoController';
 
 const horariosDisponiveis = [
     '09:00',
@@ -25,9 +18,10 @@ const horariosDisponiveis = [
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Agendar'>;
 
-
 const AgendarScreen: React.FC<Props> = ({ navigation }) => {
-    const [nome, setNome] = useState('');
+    const [nomeCliente, setNomeCliente] = useState('');
+    const [nomeBarbeador, setNomeBarbeador] = useState('');
+    const [nomeCorte, setNomeCorte] = useState('');
     const [data, setData] = useState(new Date());
     const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
     const [horarioSelecionado, setHorarioSelecionado] = useState<string | null>(null);
@@ -39,29 +33,48 @@ const AgendarScreen: React.FC<Props> = ({ navigation }) => {
     };
 
     const agendar = () => {
-        if (!nome || !horarioSelecionado) {
+        // Usando o AgendamentoController para criar o agendamento
+        const agendamento = AgendamentoController.agendar(nomeCliente, nomeBarbeador, nomeCorte, data, horarioSelecionado || '');
+
+        if (!agendamento) {
             Alert.alert('Erro', 'Por favor, preencha todos os campos.');
             return;
         }
 
         Alert.alert(
             'Agendamento Confirmado',
-            `Nome: ${nome}\nData: ${data.toLocaleDateString()}\nHorário: ${horarioSelecionado}`
+            `Cliente: ${agendamento.nomeCliente}\nCorte: ${agendamento.nomeCorte}\nBarbeador: ${agendamento.nomeBarbeador}\nData: ${agendamento.data.toLocaleDateString()}\nHorário: ${agendamento.horario}`
         );
 
-        // Aqui você pode enviar os dados para uma API ou salvar no AsyncStorage/Firebase/etc.
+        // Aqui você pode realizar ações adicionais, como enviar para uma API ou salvar em um banco de dados.
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.titulo}>Agendar Corte de Cabelo</Text>
 
-            <Text style={styles.label}>Nome:</Text>
+            <Text style={styles.label}>Nome do Cliente:</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Digite seu nome"
-                value={nome}
-                onChangeText={setNome}
+                placeholder="Digite o nome do cliente"
+                value={nomeCliente}
+                onChangeText={setNomeCliente}
+            />
+
+            <Text style={styles.label}>Nome do Barbeador:</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Digite o nome do barbeador"
+                value={nomeBarbeador}
+                onChangeText={setNomeBarbeador}
+            />
+
+            <Text style={styles.label}>Nome do Corte:</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Digite o nome do corte"
+                value={nomeCorte}
+                onChangeText={setNomeCorte}
             />
 
             <Text style={styles.label}>Data:</Text>
@@ -106,11 +119,7 @@ const AgendarScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <Button title="Agendar" onPress={agendar} /><br />
-            <Button
-                title="Voltar"
-                onPress={() => navigation.navigate('Dash')}
-            />
-
+            <Button title="Voltar" onPress={() => navigation.navigate('Dash')} />
         </View>
     );
 };

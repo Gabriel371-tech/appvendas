@@ -1,6 +1,6 @@
 import { RootStackParamList } from '@/app/(tabs)'; // Ajuste o caminho
 import { auth, db } from '@/src/services/connectionFirebase';
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { get, ref } from 'firebase/database';
@@ -14,21 +14,31 @@ export default function PerfilScreen() {
 
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const user = auth.currentUser;
-        if (user) {
-          const userRef = ref(db, `users/${user.uid}`);
-          const snapshot = await get(userRef);
-          if (snapshot.exists()) {
-            setUserData(snapshot.val());
-          } else {
-            console.log('Nenhum dado encontrado!');
-          }
+
+        // Verificando se o usuário está logado
+        if (!user) {
+          setError('Usuário não logado');
+          setLoading(false);
+          return;
         }
-      } catch (error) {
+
+        const userRef = ref(db, `users/${user.uid}`);
+
+        // Verificando a existência de dados do usuário
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) {
+          setUserData(snapshot.val());
+        } else {
+          setError('Nenhum dado encontrado no Firebase');
+        }
+      } catch (error: any) {
+        setError('Erro ao buscar dados: ' + error.message);
         console.error('Erro ao buscar dados do usuário:', error);
       } finally {
         setLoading(false);
@@ -55,6 +65,14 @@ export default function PerfilScreen() {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {userData ? (
@@ -66,7 +84,6 @@ export default function PerfilScreen() {
           <Text style={styles.text}>Telefone: {userData.telefone}</Text><br />
           <Button title="Sair" onPress={handleLogout} color="#d9534f" /><br />
           <Button title="Editar Perfil" onPress={() => navigation.navigate('EditProfile')} />
-
         </View>
       ) : (
         <Text style={styles.text}>Nenhum dado encontrado.</Text>
@@ -80,7 +97,6 @@ export default function PerfilScreen() {
       </View>
 
     </View>
-
   );
 }
 
@@ -117,6 +133,10 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     color: '#666',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
   },
   footer: {
     position: 'absolute', // fixa no fundo
