@@ -1,8 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,22 +8,24 @@ import {
   TextInput,
   TouchableOpacity,
   View
-} from "react-native";
-import { RootStackParamList } from "../../app/(tabs)/index";
-import { auth, db } from "../services/connectionFirebase";
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../app/(tabs)/index';
+import { User } from '../models/User';
+import { handleUserRegister } from '../controllers/userController';
 
 type NavProp = StackNavigationProp<RootStackParamList>;
 
 export default function RegisterScreen() {
   const navigation = useNavigation<NavProp>();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [cidade, setCidade] = useState("");
-
-  const [message, setMessage] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
   const isValidEmail = (email: string) => {
@@ -35,60 +33,45 @@ export default function RegisterScreen() {
     return regex.test(email);
   };
 
-  const showMessage = (msg: string, isErr: boolean = false) => {
+  const showMessage = (msg: string, isErr = false) => {
     setMessage(msg);
     setIsError(isErr);
-    setTimeout(() => setMessage(""), 3000);
+    setTimeout(() => setMessage(''), 3000);
   };
 
   const handleRegister = async () => {
-    setMessage("");
+    setMessage('');
 
     if (!name || !email || !password || !telefone || !cidade) {
-      showMessage("Preencha todos os campos!", true);
+      showMessage('Preencha todos os campos!', true);
       return;
     }
 
     if (!isValidEmail(email)) {
-      showMessage("Digite um e-mail válido!", true);
+      showMessage('Digite um e-mail válido!', true);
       return;
     }
 
     if (password.length < 6) {
-      showMessage("A senha deve ter pelo menos 6 caracteres!", true);
+      showMessage('A senha deve ter pelo menos 6 caracteres!', true);
       return;
     }
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+    const user: User = { name, email, telefone, cidade };
 
-      if (user) {
-        await set(ref(db, 'users/' + user.uid), {
-          uid: user.uid,
-          name,
-          email,
-          telefone,
-          cidade,
-          createdAt: new Date().toISOString(),
-        });
-      }
-
-      showMessage("Usuário cadastrado com sucesso!");
-
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1500);
-
-    } catch (error: any) {
-      showMessage(`Erro ao cadastrar: ${error.message}`, true);
+    const error = await handleUserRegister(user, password);
+    if (error) {
+      showMessage(`Erro ao cadastrar: ${error}`, true);
+    } else {
+      showMessage('Usuário cadastrado com sucesso!');
+      setTimeout(() => navigation.goBack(), 1500);
     }
   };
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#EAF2F8" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1, backgroundColor: '#EAF2F8' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
@@ -163,36 +146,36 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingVertical: 40,
     paddingHorizontal: 20,
   },
   card: {
-    width: "85%",
+    width: '85%',
     padding: 30,
     borderRadius: 25,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    shadowColor: "#000",
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   title: {
     fontSize: 32,
-    fontWeight: "700",
-    color: "#333",
+    fontWeight: '700',
+    color: '#333',
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   input: {
-    width: "100%",
+    width: '100%',
     paddingVertical: 14,
     paddingHorizontal: 20,
-    backgroundColor: "#F0F0F0",
-    color: "#333",
+    backgroundColor: '#F0F0F0',
+    color: '#333',
     borderRadius: 15,
     marginBottom: 15,
     fontSize: 16,
@@ -217,24 +200,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
     paddingVertical: 16,
     borderRadius: 20,
-    backgroundColor: "#007AFF",
+    backgroundColor: '#007AFF',
     marginTop: 10,
   },
   buttonText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   linkText: {
-    color: "#007AFF",
+    color: '#007AFF',
     fontSize: 14,
-    textDecorationLine: "underline",
-    textAlign: "center",
+    textDecorationLine: 'underline',
+    textAlign: 'center',
   },
 });
