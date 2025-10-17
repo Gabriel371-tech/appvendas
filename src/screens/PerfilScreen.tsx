@@ -73,8 +73,9 @@ export default function PerfilScreen() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={28} color="red" />
+        <TouchableOpacity onPress={handleLogout} style={styles.footerButton} >
+          <Ionicons name="log-out-outline" size={28} color="blue" />
+          <Text style={styles.footerText}>Sair</Text>
         </TouchableOpacity>
       </View>
 

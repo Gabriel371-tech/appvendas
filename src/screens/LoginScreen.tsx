@@ -1,7 +1,8 @@
-import { RootStackParamList } from "@/app/(tabs)";
+// src/screens/LoginScreen.tsx
+import { RootStackParamList } from "@/app/(tabs)/index";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import {
@@ -16,11 +17,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { auth } from "../services/connectionFirebase"; // Ajuste o caminho conforme seu projeto
+import { auth } from "../services/connectionFirebase";
 
 const { width } = Dimensions.get("window");
 
-type NavProp = StackNavigationProp<RootStackParamList, "Login">;
+type NavProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
 export default function LoginScreen() {
   const navigation = useNavigation<NavProp>();
