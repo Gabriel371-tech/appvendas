@@ -3,7 +3,7 @@ import PerfilScreen from "@/src/screens/PerfilScreen";
 import RegisterScreen from "@/src/screens/RegisterScreen";
 import { createStackNavigator } from "@react-navigation/stack";
 import AgendarScreen from "../../src/screens/AgendarScreen";
-import DashboardScreen from "../../src/screens/DashBoardScreen";
+import DashboardScreen from "../../src/screens/DashboardScreen";
 import HomeScreen from "../../src/screens/HomeScreen";
 import LoginScreen from "../../src/screens/LoginScreen";
 export type RootStackParamList = {
@@ -15,9 +15,9 @@ export type RootStackParamList = {
   EditProfile: undefined;
   Agendar: undefined;
 };
- 
+
 const Stack = createStackNavigator<RootStackParamList>();
- 
+
 export default function RootStack() {
   return (
     <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>

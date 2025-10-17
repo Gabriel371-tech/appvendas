@@ -1,10 +1,11 @@
 import { RootStackParamList } from '@/app/(tabs)'; // Ajuste o caminho
 import { auth, db } from '@/src/services/connectionFirebase';
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { get, ref } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type PerfilScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Perfil'>;
 
@@ -70,7 +71,15 @@ export default function PerfilScreen() {
       ) : (
         <Text style={styles.text}>Nenhum dado encontrado.</Text>
       )}
+
+      <View style={styles.footer}>
+        <TouchableOpacity onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={28} color="red" />
+        </TouchableOpacity>
+      </View>
+
     </View>
+
   );
 }
 
@@ -108,4 +117,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#666',
   },
+  footer: {
+    position: 'absolute', // fixa no fundo
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    backgroundColor: '#f8f8f8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#007AFF',
+    marginTop: 4,
+  }
 });
