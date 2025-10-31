@@ -1,5 +1,8 @@
+import { auth, db } from '@/src/services/connectionFirebase';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { ref, set } from 'firebase/database';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -12,7 +15,6 @@ import {
   View
 } from 'react-native';
 import { RootStackParamList } from '../../app/(tabs)/index';
-import { handleUserRegister } from '../controllers/userController';
 import { User } from '../models/User';
 
 type NavProp = StackNavigationProp<RootStackParamList>;
@@ -28,10 +30,8 @@ export default function RegisterScreen() {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
-  const isValidEmail = (email: string) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
+  // Validação simples de e-mail
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const showMessage = (msg: string, isErr = false) => {
     setMessage(msg);
@@ -39,6 +39,7 @@ export default function RegisterScreen() {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  // 🔹 Cadastra usuário no Firebase Auth + salva dados no Realtime Database
   const handleRegister = async () => {
     setMessage('');
 
@@ -57,14 +58,29 @@ export default function RegisterScreen() {
       return;
     }
 
-    const user: User = { name, email, telefone, cidade };
+    try {
+      // Cria usuário no Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
 
-    const error = await handleUserRegister(user, password);
-    if (error) {
-      showMessage(`Erro ao cadastrar: ${error}`, true);
-    } else {
+      // Cria objeto com dados do usuário
+      const newUser: User = {
+        uid,
+        name,
+        email,
+        telefone,
+        cidade,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Salva no Realtime Database
+      await set(ref(db, `users/${uid}`), newUser);
+
       showMessage('Usuário cadastrado com sucesso!');
       setTimeout(() => navigation.goBack(), 1500);
+    } catch (error: any) {
+      console.error('Erro ao cadastrar:', error);
+      showMessage(`Erro ao cadastrar: ${error.message}`, true);
     }
   };
 
