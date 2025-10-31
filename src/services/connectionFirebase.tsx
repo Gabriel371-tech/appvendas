@@ -6,6 +6,7 @@ import { getDatabase } from 'firebase/database';
 const firebaseConfig = {
   apiKey: "AIzaSyAP8fd4N7IxMzx-Q9Q8lMhf4ZgWx2oWw44",
   authDomain: "appvendas-e5a34.firebaseapp.com",
+  databaseURL: "https://appvendas-e5a34-default-rtdb.firebaseio.com/",
   projectId: "appvendas-e5a34",
   storageBucket: "appvendas-e5a34.firebasestorage.app",
   messagingSenderId: "595730493377",
@@ -19,3 +20,4 @@ export const auth = getAuth(app);
 export const db = getDatabase(app);  // <- aqui está o Realtime Database
 
 export default app;
+
