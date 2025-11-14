@@ -1,250 +1,153 @@
-import { RootStackParamList } from '@/app/(tabs)/index';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { onValue, push, ref, set, update } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
-import {
-    Alert,
-    Button,
-    FlatList,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
-import { auth, db } from '../services/connectionFirebase';
+import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { ref, set } from "firebase/database";
+import React, { useState } from "react";
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { AgendamentoModel } from "../models/Agendar";
+import { auth, db } from "../services/connectionFirebase";
 
-const horariosDisponiveis = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+type RootStackParamList = {
+  Agendamentos: undefined;
+  Agendar: undefined;
+};
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Agendar'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const AgendarScreen: React.FC<Props> = ({ navigation }) => {
-  const [nomeCliente, setNomeCliente] = useState('');
-  const [nomeBarbeador, setNomeBarbeador] = useState('');
-  const [nomeCorte, setNomeCorte] = useState('');
-  const [data, setData] = useState(new Date());
-  const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
-  const [horarioSelecionado, setHorarioSelecionado] = useState<string | null>(null);
-  const [agendamentos, setAgendamentos] = useState<any[]>([]);
-  const [editandoId, setEditandoId] = useState<string | null>(null);
+export default function AgendarScreen() {
+  const navigation = useNavigation<NavigationProp>();
 
-  // 🔄 Carregar agendamentos do Realtime Database em tempo real
-  useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      Alert.alert('Erro', 'Usuário não autenticado!');
+  const [nomeCliente, setNomeCliente] = useState("");
+  const [nomeBarbeador, setNomeBarbeador] = useState("");
+  const [nomeCorte, setNomeCorte] = useState("");
+  const [data, setData] = useState("");
+  const [horario, setHorario] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const criarAgendamento = async () => {
+    if (!nomeCliente || !nomeBarbeador || !nomeCorte || !data || !horario) {
+      Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
-
-    const agendamentosRef = ref(db, `agendamentos/${user.uid}`);
-    const unsubscribe = onValue(agendamentosRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const lista = Object.entries(data).map(([id, value]: any) => ({
-          id,
-          ...value,
-        }));
-        setAgendamentos(lista);
-      } else {
-        setAgendamentos([]);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // 📅 Alterar data
-  const aoAlterarData = (event: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || data;
-    setMostrarDatePicker(Platform.OS === 'ios');
-    setData(currentDate);
-  };
-
-  // 💾 Criar ou atualizar agendamento
-  const agendar = async () => {
-    if (!nomeCliente || !nomeBarbeador || !nomeCorte || !horarioSelecionado) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (!user) {
-      Alert.alert('Erro', 'Usuário não autenticado!');
-      return;
-    }
-
-    const agendamento = {
-      nomeCliente,
-      nomeBarbeador,
-      nomeCorte,
-      data: data.toISOString(),
-      horario: horarioSelecionado,
-    };
 
     try {
-      const agendamentosRef = ref(db, `agendamentos/${user.uid}`);
+      setLoading(true);
 
-      if (editandoId) {
-        // Atualiza o agendamento existente
-        const agendamentoRef = ref(db, `agendamentos/${user.uid}/${editandoId}`);
-        await update(agendamentoRef, agendamento);
-        Alert.alert('Sucesso', 'Agendamento atualizado com sucesso!');
-      } else {
-        // Cria novo agendamento
-        const novoAgendamentoRef = push(agendamentosRef);
-        await set(novoAgendamentoRef, agendamento);
-        Alert.alert('Sucesso', 'Agendamento criado com sucesso!');
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert("Erro", "Usu�rio n�o autenticado.");
+        return;
       }
 
-      // Limpa os campos
-      setNomeCliente('');
-      setNomeBarbeador('');
-      setNomeCorte('');
-      setHorarioSelecionado(null);
-      setData(new Date());
-      setEditandoId(null);
-    } catch (error: any) {
-      Alert.alert('Erro', error.message || 'Erro ao salvar agendamento.');
+      const id = Date.now().toString();
+      const agendamento = new AgendamentoModel(
+        nomeCliente,
+        nomeBarbeador,
+        nomeCorte,
+        data.replace(/\//g, "-"),
+        horario
+      );
+
+      const caminho = `agendamentos/${user.uid}/${id}`;
+      await set(ref(db, caminho), agendamento);
+
+      Alert.alert("Sucesso", "Agendamento criado com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("Agendamentos"),
+        },
+      ]);
+
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Erro", "N�o foi poss�vel criar o agendamento.");
+    } finally {
+      setLoading(false);
     }
   };
-
-  // ✏️ Editar agendamento
-  const editarAgendamento = (item: any) => {
-    setNomeCliente(item.nomeCliente);
-    setNomeBarbeador(item.nomeBarbeador);
-    setNomeCorte(item.nomeCorte);
-    setData(new Date(item.data));
-    setHorarioSelecionado(item.horario);
-    setEditandoId(item.id);
-  };
-
-  const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.agendamentoCard} onPress={() => editarAgendamento(item)}>
-      <Text style={styles.agendamentoText}>👤 Cliente: {item.nomeCliente}</Text>
-      <Text style={styles.agendamentoText}>💈 Barbeador: {item.nomeBarbeador}</Text>
-      <Text style={styles.agendamentoText}>✂️ Corte: {item.nomeCorte}</Text>
-      <Text style={styles.agendamentoText}>📅 Data: {new Date(item.data).toLocaleDateString()}</Text>
-      <Text style={styles.agendamentoText}>🕒 Horário: {item.horario}</Text>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>
-        {editandoId ? '✏️ Editar Agendamento' : 'Agendar Corte de Cabelo'}
-      </Text>
+      <Text style={styles.title}>Novo Agendamento</Text>
 
-      <Text style={styles.label}>Nome do Cliente:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Digite o nome do cliente"
-        value={nomeCliente}
+        placeholder="Nome do Cliente"
+        placeholderTextColor="#777"
         onChangeText={setNomeCliente}
       />
 
-      <Text style={styles.label}>Nome do Barbeador:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Digite o nome do barbeador"
-        value={nomeBarbeador}
+        placeholder="Nome do Barbeiro"
+        placeholderTextColor="#777"
         onChangeText={setNomeBarbeador}
       />
 
-      <Text style={styles.label}>Nome do Corte:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Digite o nome do corte"
-        value={nomeCorte}
+        placeholder="Servi�o (Corte, Barba...)"
+        placeholderTextColor="#777"
         onChangeText={setNomeCorte}
       />
 
-      <Text style={styles.label}>Data:</Text>
-      <TouchableOpacity onPress={() => setMostrarDatePicker(true)} style={styles.input}>
-        <Text>{data.toLocaleDateString()}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Data (20-11-2024)"
+        placeholderTextColor="#777"
+        onChangeText={setData}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Hor�rio (14:00)"
+        placeholderTextColor="#777"
+        onChangeText={setHorario}
+      />
+
+      <TouchableOpacity
+        style={[styles.button, styles.buttonSalvar]}
+        onPress={criarAgendamento}
+        disabled={loading}
+      >
+        <MaterialIcons name="save" size={20} color="#fff" />
+        <Text style={styles.buttonText}>{loading ? "Salvando..." : "Salvar Agendamento"}</Text>
       </TouchableOpacity>
 
-      {mostrarDatePicker && (
-        <DateTimePicker
-          value={data}
-          mode="date"
-          display="default"
-          onChange={aoAlterarData}
-          minimumDate={new Date()}
-        />
-      )}
-
-      <Text style={styles.label}>Horário:</Text>
-      <View style={styles.horariosContainer}>
-        {horariosDisponiveis.map((hora) => (
-          <TouchableOpacity
-            key={hora}
-            style={[
-              styles.horarioButton,
-              horarioSelecionado === hora && styles.horarioSelecionado,
-            ]}
-            onPress={() => setHorarioSelecionado(hora)}
-          >
-            <Text
-              style={[
-                styles.horarioTexto,
-                horarioSelecionado === hora && { color: '#fff' },
-              ]}
-            >
-              {hora}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Button
-        title={editandoId ? 'Salvar Alterações' : 'Agendar'}
-        onPress={agendar}
-      />
-      <Button title="Voltar" onPress={() => navigation.navigate('Dash')} color="#888" />
-
-      <Text style={styles.titulo}>📋 Agendamentos Existentes</Text>
-      <FlatList
-        data={agendamentos}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-      />
+      <TouchableOpacity
+        style={[styles.button, styles.buttonVer]}
+        onPress={() => navigation.navigate("Agendamentos")}
+      >
+        <MaterialIcons name="list" size={20} color="#fff" />
+        <Text style={styles.buttonText}>Ver meus agendamentos</Text>
+      </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  titulo: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { marginTop: 10, marginBottom: 4, fontSize: 16, fontWeight: '500' },
+  container: { flex: 1, backgroundColor: "#111", padding: 20 },
+  title: { fontSize: 22, fontWeight: "bold", color: "#fff", marginBottom: 20 },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 10,
-  },
-  horariosContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 },
-  horarioButton: {
-    padding: 10,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#007AFF',
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  horarioSelecionado: { backgroundColor: '#007AFF' },
-  horarioTexto: { color: '#007AFF', fontWeight: '500' },
-  agendamentoCard: {
-    backgroundColor: '#f9f9f9',
-    padding: 15,
-    marginVertical: 8,
+    backgroundColor: "#222",
+    padding: 12,
     borderRadius: 8,
+    color: "#fff",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#333",
+    marginBottom: 12,
   },
-  agendamentoText: { fontSize: 15, color: '#333' },
+  button: {
+    backgroundColor: "#FF6B35",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 10,
+  },
+  buttonSalvar: { backgroundColor: "#FF6B35" },
+  buttonVer: { backgroundColor: "#4A90E2" },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
-
-export default AgendarScreen;

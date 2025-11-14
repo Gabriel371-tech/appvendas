@@ -2,23 +2,25 @@ import { MaterialIcons } from "@expo/vector-icons";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { ref, remove, update } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { auth, db } from "../services/connectionFirebase";
 
 interface Agendamento {
   id: string;
-  nome: string;
+  nomeCliente: string;
   servico: string;
-  hora: string;
-  dataCriacao: string;
+  horario: string;
+  data: string;
 }
 
 type RootStackParamList = {
@@ -27,7 +29,10 @@ type RootStackParamList = {
   EditarAgendamento: { agendamento: Agendamento };
 };
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, "EditarAgendamento">;
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "EditarAgendamento"
+>;
 type RoutePropType = RouteProp<RootStackParamList, "EditarAgendamento">;
 
 export default function EditarAgendamentoScreen() {
@@ -35,9 +40,10 @@ export default function EditarAgendamentoScreen() {
   const route = useRoute<RoutePropType>();
   const { agendamento } = route.params;
 
-  const [nome, setNome] = useState(agendamento?.nome || "");
+  const [nomeCliente, setNomeCliente] = useState(agendamento?.nomeCliente || "");
   const [servico, setServico] = useState(agendamento?.servico || "");
-  const [hora, setHora] = useState(agendamento?.hora || "");
+  const [horario, setHorario] = useState(agendamento?.horario || "");
+  const [data, setData] = useState(agendamento?.data || "");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -46,69 +52,73 @@ export default function EditarAgendamentoScreen() {
     });
   }, [navigation]);
 
+  // -------------------------
+  // SALVAR ALTERA€åES
+  // -------------------------
   const salvarAlteracoes = async () => {
-    if (!nome || !servico || !hora) {
-      Alert.alert("Erro", "Por favor, preencha todos os campos!");
+    if (!nomeCliente || !servico || !horario || !data) {
+      Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
     setLoading(true);
+
     try {
-      const agendamentoAtualizado = {
-        ...agendamento,
-        nome,
-        servico,
-        hora,
-      };
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert("Erro", "Usu rio nÆo autenticado");
+        return;
+      }
 
-      // TODO: Atualizar no Firebase ou AsyncStorage
-      console.log("Agendamento atualizado:", agendamentoAtualizado);
+      const caminho = `agendamentos/${user.uid}/${agendamento.id}`;
+      const agendamentoRef = ref(db, caminho);
 
-      Alert.alert("Sucesso", "Agendamento atualizado com sucesso!", [
-        {
-          text: "OK",
-          onPress: () => {
-            navigation.goBack();
-          },
-        },
+      await update(agendamentoRef, {
+        nomeCliente,
+        nomeCorte: servico,
+        horario,
+        data: data.replace(/\//g, "-"),
+      });
+
+      Alert.alert("Sucesso", "Agendamento atualizado!", [
+        { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
+      console.log(error);
       Alert.alert("Erro", "Falha ao atualizar agendamento");
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
+  // -------------------------
+  // EXCLUIR AGENDAMENTO
+  // -------------------------
   const excluirAgendamento = () => {
     Alert.alert(
       "Confirmar exclusÆo",
       "Tem certeza que deseja excluir este agendamento?",
       [
-        { text: "Cancelar", onPress: () => {}, style: "cancel" },
+        { text: "Cancelar", style: "cancel" },
         {
           text: "Excluir",
+          style: "destructive",
           onPress: async () => {
-            setLoading(true);
             try {
-              // TODO: Excluir do Firebase ou AsyncStorage
-              console.log("Agendamento exclu¡do:", agendamento.id);
-              Alert.alert("Sucesso", "Agendamento exclu¡do com sucesso!", [
-                {
-                  text: "OK",
-                  onPress: () => {
-                    navigation.navigate("Agendamentos");
-                  },
-                },
+              const user = auth.currentUser;
+              if (!user) return;
+
+              const caminho = `agendamentos/${user.uid}/${agendamento.id}`;
+              await remove(ref(db, caminho));
+
+              Alert.alert("Sucesso", "Agendamento exclu¡do!", [
+                { text: "OK", onPress: () => navigation.goBack() },
               ]);
             } catch (error) {
-              Alert.alert("Erro", "Falha ao excluir agendamento");
-              console.error(error);
-            } finally {
-              setLoading(false);
+              console.log(error);
+              Alert.alert("Erro", "NÆo foi poss¡vel excluir");
             }
           },
-          style: "destructive",
         },
       ]
     );
@@ -122,11 +132,11 @@ export default function EditarAgendamentoScreen() {
 
       <View style={styles.content}>
         <View style={styles.field}>
-          <Text style={styles.label}>Nome do cliente</Text>
+          <Text style={styles.label}>Nome do Cliente</Text>
           <TextInput
             style={styles.input}
-            value={nome}
-            onChangeText={setNome}
+            value={nomeCliente}
+            onChangeText={setNomeCliente}
             placeholder="JoÆo Silva"
             placeholderTextColor="#666"
             editable={!loading}
@@ -139,19 +149,31 @@ export default function EditarAgendamentoScreen() {
             style={styles.input}
             value={servico}
             onChangeText={setServico}
-            placeholder="Ex: Corte, Barba e cabelo"
+            placeholder="Corte, Barba..."
             placeholderTextColor="#666"
             editable={!loading}
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Data e hora</Text>
+          <Text style={styles.label}>Data</Text>
           <TextInput
             style={styles.input}
-            value={hora}
-            onChangeText={setHora}
-            placeholder="10:00 AM"
+            value={data}
+            onChangeText={setData}
+            placeholder="20-11-2024"
+            placeholderTextColor="#666"
+            editable={!loading}
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Hor rio</Text>
+          <TextInput
+            style={styles.input}
+            value={horario}
+            onChangeText={setHorario}
+            placeholder="14:00"
             placeholderTextColor="#666"
             editable={!loading}
           />
@@ -162,14 +184,10 @@ export default function EditarAgendamentoScreen() {
           onPress={salvarAlteracoes}
           disabled={loading}
         >
-          {loading ? (
-            <Text style={styles.buttonText}>Salvando...</Text>
-          ) : (
-            <>
-              <MaterialIcons name="save" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Salvar Altera‡äes</Text>
-            </>
-          )}
+          <MaterialIcons name="save" size={20} color="#fff" />
+          <Text style={styles.buttonText}>
+            {loading ? "Salvando..." : "Salvar Altera‡äes"}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -195,10 +213,7 @@ export default function EditarAgendamentoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#111",
-  },
+  container: { flex: 1, backgroundColor: "#111" },
   header: {
     backgroundColor: "#1a1a1a",
     paddingHorizontal: 20,
@@ -207,52 +222,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#333",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  content: {
-    padding: 20,
-  },
-  field: {
-    marginBottom: 20,
-  },
-  label: {
-    color: "#ccc",
-    marginBottom: 8,
-    fontWeight: "600",
-    fontSize: 14,
-  },
+  title: { fontSize: 24, fontWeight: "bold", color: "#fff" },
+  content: { padding: 20 },
+  field: { marginBottom: 20 },
+  label: { color: "#ccc", marginBottom: 8, fontSize: 14 },
   input: {
     backgroundColor: "#222",
-    color: "#fff",
     padding: 12,
     borderRadius: 8,
+    color: "#fff",
     borderWidth: 1,
     borderColor: "#333",
   },
   button: {
     flexDirection: "row",
+    gap: 8,
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     marginVertical: 10,
-    gap: 8,
   },
-  buttonSalvar: {
-    backgroundColor: "#4CAF50",
-  },
-  buttonExcluir: {
-    backgroundColor: "#f44336",
-  },
-  buttonCancelar: {
-    backgroundColor: "#666",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
-  },
+  buttonSalvar: { backgroundColor: "#4CAF50" },
+  buttonExcluir: { backgroundColor: "#f44336" },
+  buttonCancelar: { backgroundColor: "#666" },
+  buttonText: { color: "#fff", fontWeight: "bold" },
 });
