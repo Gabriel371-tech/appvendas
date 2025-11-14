@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { get, ref } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type PerfilScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Perfil'>;
 
@@ -77,13 +77,19 @@ export default function PerfilScreen() {
     <View style={styles.container}>
       {userData ? (
         <View style={styles.card}>
-          <Text style={styles.title}>Informa√ß√µes do Usu√°rio</Text>
+          <Text style={styles.title}>Informaá‰es do Usu†rio</Text>
           <Text style={styles.text}>Nome: {userData.name}</Text>
           <Text style={styles.text}>E-mail: {userData.email}</Text>
           <Text style={styles.text}>Cidade: {userData.cidade}</Text>
-          <Text style={styles.text}>Telefone: {userData.telefone}</Text><br />
-          <Button title="Sair" onPress={handleLogout} color="#d9534f" /><br />
-          <Button title="Editar Perfil" onPress={() => navigation.navigate('EditProfile')} />
+          <Text style={styles.text}>Telefone: {userData.telefone}</Text>
+          
+          <TouchableOpacity style={[styles.button, styles.buttonEditar]} onPress={() => navigation.navigate('EditProfile')}>
+            <Text style={styles.buttonText}>Editar Perfil</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={[styles.button, styles.buttonSair]} onPress={handleLogout}>
+            <Text style={styles.buttonText}>Sair</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <Text style={styles.text}>Nenhum dado encontrado.</Text>
@@ -158,5 +164,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#007AFF',
     marginTop: 4,
-  }
+  },
+  button: {
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  buttonEditar: {
+    backgroundColor: '#007AFF',
+  },
+  buttonSair: {
+    backgroundColor: '#d9534f',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });

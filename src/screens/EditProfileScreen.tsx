@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { get, ref, update } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type EditProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'EditProfile'>;
 
@@ -96,10 +96,15 @@ export default function EditProfile() {
         keyboardType="phone-pad"
       />
 
-      <Button title="Salvar AlteraÃ§Ãµes" onPress={handleSave} />
-
       <TouchableOpacity
         style={styles.botao}
+        onPress={handleSave}
+      >
+        <Text style={styles.botaoText}>Salvar Altera‡äes</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.botaoVoltar}
         onPress={() => navigation.goBack()}
       >
         <Text style={styles.botaoText}>Voltar</Text>
@@ -128,6 +133,13 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 6,
     marginTop: 20,
+    alignItems: 'center',
+  },
+  botaoVoltar: {
+    backgroundColor: '#7f8c8d',
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 10,
     alignItems: 'center',
   },
   botaoText: {

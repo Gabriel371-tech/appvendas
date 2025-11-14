@@ -1,3 +1,5 @@
+import AgendamentosScreen from "@/src/screens/AgendamentosScreen";
+import EditarAgendamentoScreen from "@/src/screens/EditarAgendamentoScreen";
 import EditProfileScreen from "@/src/screens/EditProfileScreen";
 import PerfilScreen from "@/src/screens/PerfilScreen";
 import RegisterScreen from "@/src/screens/RegisterScreen";
@@ -6,6 +8,7 @@ import AgendarScreen from "../../src/screens/AgendarScreen";
 import DashboardScreen from "../../src/screens/DashboardScreen";
 import HomeScreen from "../../src/screens/HomeScreen";
 import LoginScreen from "../../src/screens/LoginScreen";
+
 export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
@@ -14,6 +17,8 @@ export type RootStackParamList = {
   Perfil: undefined;
   EditProfile: undefined;
   Agendar: undefined;
+  Agendamentos: undefined;
+  EditarAgendamento: { agendamentoId: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -28,6 +33,8 @@ export default function RootStack() {
       <Stack.Screen name="Perfil" component={PerfilScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Agendar" component={AgendarScreen} />
+      <Stack.Screen name="Agendamentos" component={AgendamentosScreen} />
+<Stack.Screen name="EditarAgendamento" component={EditarAgendamentoScreen} />
     </Stack.Navigator>
   );
 }

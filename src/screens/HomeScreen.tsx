@@ -2,12 +2,12 @@ import { RootStackParamList } from "@/app/(tabs)";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -21,14 +21,16 @@ export default function HomeScreen() {
         <View style={styles.Header}>
           <Image style={styles.logo} source={require("../../assets/images/logo.png")}/>
           <Text style={styles.texto}>Seja Bem vindo</Text>
-          <TouchableOpacity style={styles.botao}>Agendar</TouchableOpacity>
+          <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate("Agendar")}>
+            <Text style={styles.botaoTexto}>Agendar</Text>
+          </TouchableOpacity>
 
           {/* Botao de navegação para o login */}
           <TouchableOpacity
             style={styles.botao}
             onPress={() => navigation.navigate("Login")}
           >
-            Login
+            <Text style={styles.botaoTexto}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -68,6 +70,11 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingHorizontal: 25,
     borderRadius: 25,
+    fontWeight: "600",
+  },
+  botaoTexto: {
+    color: "white",
+    fontSize: 20,
     fontWeight: "600",
   },
 });
