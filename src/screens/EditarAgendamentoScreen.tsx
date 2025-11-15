@@ -53,7 +53,7 @@ export default function EditarAgendamentoScreen() {
   }, [navigation]);
 
   // -------------------------
-  // SALVAR ALTERA€åES
+  // SALVAR ALTERAï¿½ï¿½ES
   // -------------------------
   const salvarAlteracoes = async () => {
     if (!nomeCliente || !servico || !horario || !data) {
@@ -66,7 +66,7 @@ export default function EditarAgendamentoScreen() {
     try {
       const user = auth.currentUser;
       if (!user) {
-        Alert.alert("Erro", "Usu rio nÆo autenticado");
+        Alert.alert("Erro", "Usuï¿½rio nï¿½o autenticado");
         return;
       }
 
@@ -96,7 +96,7 @@ export default function EditarAgendamentoScreen() {
   // -------------------------
   const excluirAgendamento = () => {
     Alert.alert(
-      "Confirmar exclusÆo",
+      "Confirmar exclusï¿½o",
       "Tem certeza que deseja excluir este agendamento?",
       [
         { text: "Cancelar", style: "cancel" },
@@ -111,12 +111,12 @@ export default function EditarAgendamentoScreen() {
               const caminho = `agendamentos/${user.uid}/${agendamento.id}`;
               await remove(ref(db, caminho));
 
-              Alert.alert("Sucesso", "Agendamento exclu¡do!", [
+              Alert.alert("Sucesso", "Agendamento excluï¿½do!", [
                 { text: "OK", onPress: () => navigation.goBack() },
               ]);
             } catch (error) {
               console.log(error);
-              Alert.alert("Erro", "NÆo foi poss¡vel excluir");
+              Alert.alert("Erro", "Nï¿½o foi possï¿½vel excluir");
             }
           },
         },
@@ -137,14 +137,14 @@ export default function EditarAgendamentoScreen() {
             style={styles.input}
             value={nomeCliente}
             onChangeText={setNomeCliente}
-            placeholder="JoÆo Silva"
+            placeholder="Joï¿½o Silva"
             placeholderTextColor="#666"
             editable={!loading}
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Servi‡o</Text>
+          <Text style={styles.label}>Serviï¿½o</Text>
           <TextInput
             style={styles.input}
             value={servico}
@@ -168,7 +168,7 @@ export default function EditarAgendamentoScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Hor rio</Text>
+          <Text style={styles.label}>Horï¿½rio</Text>
           <TextInput
             style={styles.input}
             value={horario}
@@ -186,7 +186,7 @@ export default function EditarAgendamentoScreen() {
         >
           <MaterialIcons name="save" size={20} color="#fff" />
           <Text style={styles.buttonText}>
-            {loading ? "Salvando..." : "Salvar Altera‡äes"}
+            {loading ? "Salvando..." : "Salvar Alteraï¿½ï¿½es"}
           </Text>
         </TouchableOpacity>
 
@@ -213,7 +213,7 @@ export default function EditarAgendamentoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#111" },
+  container: { flex: 1, backgroundColor: "#fff" },
   header: {
     backgroundColor: "#1a1a1a",
     paddingHorizontal: 20,

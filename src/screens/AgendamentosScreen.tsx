@@ -1,18 +1,11 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { get, ref, remove } from "firebase/database";
-import React, { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+
+import { ActivityIndicator, Alert, Dimensions, FlatList, Platform, StyleSheet, Text, TouchableOpacity, View, } from "react-native";
+
 import { auth, db } from "../services/connectionFirebase";
 
 interface Agendamento {
@@ -40,13 +33,15 @@ export default function AgendamentosScreen() {
   // --------------------------
   // CARREGAR AGENDAMENTOS
   // --------------------------
+ // ...existing code...
   const carregarAgendamentos = async () => {
     setLoading(true);
-
     try {
       const user = auth.currentUser;
       if (!user) {
         setAgendamentos([]);
+        console.log("carregarAgendamentos: sem usuário autenticado");
+        setLoading(false);
         return;
       }
 
@@ -57,65 +52,125 @@ export default function AgendamentosScreen() {
         const data = snapshot.val();
 
         const lista = Object.entries(data).map(([id, value]: any) => ({
-          id,
+          id: String(id),
           nomeCliente: value.nomeCliente,
-          servico: value.nomeCorte,
+          servico: value.servico ?? value.nomeCorte ?? "",
           horario: value.horario,
           data: value.data,
         }));
 
+        console.log("Agendamentos carregados (ids):", lista.map((a) => a.id));
         setAgendamentos(lista);
       } else {
+        console.log("carregarAgendamentos: snapshot vazio para", user.uid);
         setAgendamentos([]);
       }
     } catch (error) {
       console.log("Erro ao carregar agendamentos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+// ...existing code...
+
+// ...existing code...
+  const excluirAgendamento = (id: string) => {
+    console.log("excluirAgendamento chamado para id:", id);
+
+    const executarExclusao = async () => {
+      setLoading(true);
+      try {
+        const user = auth.currentUser;
+        console.log("excluirAgendamento -> user:", user?.uid);
+        if (!user) {
+          console.warn("Usuário não autenticado");
+          return;
+        }
+
+        const parentPath = `agendamentos/${user.uid}`;
+        const nodePath = `${parentPath}/${id}`;
+        const nodeRef = ref(db, nodePath);
+        const parentRef = ref(db, parentPath);
+
+        const beforeParent = await get(parentRef);
+        console.log("Antes - filhos em", parentPath, ":", Object.keys(beforeParent.val() || {}));
+
+        const snap = await get(nodeRef);
+        console.log("Antes - nó:", nodePath, "exists:", snap.exists(), "val:", snap.val());
+
+        if (snap.exists()) {
+          await remove(nodeRef);
+          console.log("remove() chamado para:", nodePath);
+        } else {
+          // fallback por campos (nomeCliente+data+horario)
+          const agLocal = agendamentos.find((a) => a.id === id);
+          const parentVal = beforeParent.val() || {};
+          let foundKey: string | null = null;
+          for (const [key, value] of Object.entries(parentVal)) {
+            const v: any = value;
+            if (
+              agLocal &&
+              v.nomeCliente === agLocal.nomeCliente &&
+              v.data === agLocal.data &&
+              v.horario === agLocal.horario
+            ) {
+              foundKey = key;
+              break;
+            }
+          }
+          if (foundKey) {
+            await remove(ref(db, `${parentPath}/${foundKey}`));
+            console.log("Removido via fallback:", `${parentPath}/${foundKey}`);
+          } else {
+            console.warn("Fallback não encontrou nó correspondente.");
+            Alert.alert("Aviso", "Não foi possível localizar o agendamento no servidor para exclusão.");
+            return;
+          }
+        }
+
+        const afterParent = await get(parentRef);
+        console.log("Depois - filhos em", parentPath, ":", Object.keys(afterParent.val() || {}));
+
+        setAgendamentos((prev) => prev.filter((a) => a.id !== id));
+        await carregarAgendamentos();
+        Alert.alert("Sucesso", "Agendamento excluído (se encontrado).");
+      } catch (error: any) {
+        console.error("Erro ao excluir agendamento:", error);
+        Alert.alert("Erro", String(error?.message ?? error));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // fallback no web (Alert.alert pode não abrir no navegador)
+    if (Platform.OS === "web") {
+      console.log("Usando confirm() no web");
+      if (window.confirm("Tem certeza que deseja excluir este agendamento?")) {
+        executarExclusao();
+      } else {
+        console.log("Exclusão cancelada (web)");
+      }
+      return;
     }
 
-    setLoading(false);
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      carregarAgendamentos();
-    }, [])
-  );
-
-  // --------------------------
-  // EXCLUIR
-  // --------------------------
-  const excluirAgendamento = (id: string) => {
     Alert.alert(
-      "Confirmar exclus�o",
+      "Confirmar exclusão",
       "Tem certeza que deseja excluir este agendamento?",
       [
         { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const user = auth.currentUser;
-              if (!user) return;
-
-              const caminho = `agendamentos/${user.uid}/${id}`;
-
-              await remove(ref(db, caminho));
-
-              setAgendamentos((prev) =>
-                prev.filter((agendamento) => agendamento.id !== id)
-              );
-
-              Alert.alert("Sucesso", "Agendamento exclu�do!");
-            } catch (error) {
-              console.log(error);
-              Alert.alert("Erro", "N�o foi poss�vel excluir.");
-            }
-          },
-        },
-      ]
+        { text: "Excluir", style: "destructive", onPress: executarExclusao },
+      ],
+      { cancelable: true }
     );
   };
+// ...existing code...
+
+   useEffect(() => {
+    carregarAgendamentos();
+    const unsubscribe = navigation.addListener("focus", carregarAgendamentos);
+    return unsubscribe;
+  }, []);
+
 
   // --------------------------
   // EDITAR
@@ -139,7 +194,7 @@ export default function AgendamentosScreen() {
       <View style={styles.agendamentoInfo}>
         <Text style={styles.agendamentoNome}>{item.nomeCliente}</Text>
         <Text style={styles.agendamentoServico}>{item.servico}</Text>
-        <Text style={styles.agendamentoHora}>Hor�rio: {item.horario}</Text>
+        <Text style={styles.agendamentoHora}>Hor�rio: {item.horario}</Text>
         <Text style={styles.agendamentoHora}>Data: {item.data}</Text>
       </View>
 
@@ -204,9 +259,9 @@ const { width } = Dimensions.get("window");
 // ESTILOS
 // ----------------------
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#111" },
+  container: { flex: 1, backgroundColor: "#fff" },
   header: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#c7c7c7ff",
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 15,
@@ -216,7 +271,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: "bold", color: "#fff", marginBottom: 15 },
   botaoNovoAgendamento: {
     flexDirection: "row",
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#3572ffff",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -225,7 +280,7 @@ const styles = StyleSheet.create({
   botaoNovoTexto: { color: "#fff", fontWeight: "bold", marginLeft: 8 },
   listContainer: { padding: 15, paddingBottom: 30 },
   agendamentoCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#e1ccccff",
     borderRadius: 12,
     padding: 15,
     marginBottom: 12,
@@ -233,12 +288,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderLeftWidth: 4,
-    borderLeftColor: "#FF6B35",
+    borderLeftColor: "#000000ff",
   },
   agendamentoInfo: { flex: 1, marginRight: 10 },
-  agendamentoNome: { fontSize: 16, fontWeight: "bold", color: "#fff" },
-  agendamentoServico: { color: "#ccc", marginBottom: 6 },
-  agendamentoHora: { color: "#999" },
+  agendamentoNome: { fontSize: 16, fontWeight: "bold", color: "#000" },
+  agendamentoServico: { color: "#000", marginBottom: 6 },
+  agendamentoHora: { color: "#000" },
   agendamentoBotoes: { flexDirection: "row", gap: 8 },
   botaoIcon: {
     width: 36,

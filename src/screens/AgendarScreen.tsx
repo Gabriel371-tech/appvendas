@@ -35,7 +35,7 @@ export default function AgendarScreen() {
 
       const user = auth.currentUser;
       if (!user) {
-        Alert.alert("Erro", "Usu†rio n∆o autenticado.");
+        Alert.alert("Erro", "Usuario n√£o autenticado.");
         return;
       }
 
@@ -60,7 +60,7 @@ export default function AgendarScreen() {
 
     } catch (error) {
       console.log(error);
-      Alert.alert("Erro", "N∆o foi poss°vel criar o agendamento.");
+      Alert.alert("Erro", "N√£o foi possivel criar o agendamento.");
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ export default function AgendarScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="Serviáo (Corte, Barba...)"
+        placeholder="ServiÔøΩo (Corte, Barba...)"
         placeholderTextColor="#777"
         onChangeText={setNomeCorte}
       />
@@ -100,7 +100,7 @@ export default function AgendarScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="Hor†rio (14:00)"
+        placeholder="Horario (14:00)"
         placeholderTextColor="#777"
         onChangeText={setHorario}
       />
@@ -126,10 +126,10 @@ export default function AgendarScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#111", padding: 20 },
-  title: { fontSize: 22, fontWeight: "bold", color: "#fff", marginBottom: 20 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  title: { fontSize: 22, fontWeight: "bold", color: "#000", marginBottom: 20 },
   input: {
-    backgroundColor: "#222",
+    backgroundColor: "#333",
     padding: 12,
     borderRadius: 8,
     color: "#fff",
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#355dffff",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 10,
   },
-  buttonSalvar: { backgroundColor: "#FF6B35" },
+  buttonSalvar: { backgroundColor: "#0039e4ff" },
   buttonVer: { backgroundColor: "#4A90E2" },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
