@@ -2,12 +2,12 @@ import { RootStackParamList } from "@/app/(tabs)";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
-    Dimensions,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -19,7 +19,7 @@ export default function HomeScreen() {
   return (
       <View style={styles.container}>
         <View style={styles.Header}>
-          <Image style={styles.logo} source={require("../../assets/images/logo.png")}/>
+          <Image style={styles.logo} source={require("../../assets/images/petshop.png")}/>
           <Text style={styles.texto}>Seja Bem vindo</Text>
           <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate("Agendar")}>
             <Text style={styles.botaoTexto}>Agendar</Text>

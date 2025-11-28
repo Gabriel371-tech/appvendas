@@ -4,13 +4,24 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { get, ref, remove } from "firebase/database";
 import React, { useEffect, useState } from "react";
 
-import { ActivityIndicator, Alert, Dimensions, FlatList, Platform, StyleSheet, Text, TouchableOpacity, View, } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { auth, db } from "../services/connectionFirebase";
 
 interface Agendamento {
   id: string;
   nomeCliente: string;
+  nomePet: string;
   servico: string;
   horario: string;
   data: string;
@@ -33,14 +44,12 @@ export default function AgendamentosScreen() {
   // --------------------------
   // CARREGAR AGENDAMENTOS
   // --------------------------
- // ...existing code...
   const carregarAgendamentos = async () => {
     setLoading(true);
     try {
       const user = auth.currentUser;
       if (!user) {
         setAgendamentos([]);
-        console.log("carregarAgendamentos: sem usuário autenticado");
         setLoading(false);
         return;
       }
@@ -54,15 +63,14 @@ export default function AgendamentosScreen() {
         const lista = Object.entries(data).map(([id, value]: any) => ({
           id: String(id),
           nomeCliente: value.nomeCliente,
-          servico: value.servico ?? value.nomeCorte ?? "",
+          nomePet: value.nomePet || "",
+          servico: value.servico,
           horario: value.horario,
           data: value.data,
         }));
 
-        console.log("Agendamentos carregados (ids):", lista.map((a) => a.id));
         setAgendamentos(lista);
       } else {
-        console.log("carregarAgendamentos: snapshot vazio para", user.uid);
         setAgendamentos([]);
       }
     } catch (error) {
@@ -71,106 +79,53 @@ export default function AgendamentosScreen() {
       setLoading(false);
     }
   };
-// ...existing code...
 
-// ...existing code...
+  // --------------------------
+  // EXCLUIR AGENDAMENTO
+  // --------------------------
   const excluirAgendamento = (id: string) => {
-    console.log("excluirAgendamento chamado para id:", id);
-
     const executarExclusao = async () => {
       setLoading(true);
+
       try {
         const user = auth.currentUser;
-        console.log("excluirAgendamento -> user:", user?.uid);
-        if (!user) {
-          console.warn("Usuário não autenticado");
-          return;
-        }
+        if (!user) return;
 
-        const parentPath = `agendamentos/${user.uid}`;
-        const nodePath = `${parentPath}/${id}`;
-        const nodeRef = ref(db, nodePath);
-        const parentRef = ref(db, parentPath);
-
-        const beforeParent = await get(parentRef);
-        console.log("Antes - filhos em", parentPath, ":", Object.keys(beforeParent.val() || {}));
-
-        const snap = await get(nodeRef);
-        console.log("Antes - nó:", nodePath, "exists:", snap.exists(), "val:", snap.val());
-
-        if (snap.exists()) {
-          await remove(nodeRef);
-          console.log("remove() chamado para:", nodePath);
-        } else {
-          // fallback por campos (nomeCliente+data+horario)
-          const agLocal = agendamentos.find((a) => a.id === id);
-          const parentVal = beforeParent.val() || {};
-          let foundKey: string | null = null;
-          for (const [key, value] of Object.entries(parentVal)) {
-            const v: any = value;
-            if (
-              agLocal &&
-              v.nomeCliente === agLocal.nomeCliente &&
-              v.data === agLocal.data &&
-              v.horario === agLocal.horario
-            ) {
-              foundKey = key;
-              break;
-            }
-          }
-          if (foundKey) {
-            await remove(ref(db, `${parentPath}/${foundKey}`));
-            console.log("Removido via fallback:", `${parentPath}/${foundKey}`);
-          } else {
-            console.warn("Fallback não encontrou nó correspondente.");
-            Alert.alert("Aviso", "Não foi possível localizar o agendamento no servidor para exclusão.");
-            return;
-          }
-        }
-
-        const afterParent = await get(parentRef);
-        console.log("Depois - filhos em", parentPath, ":", Object.keys(afterParent.val() || {}));
+        const path = `agendamentos/${user.uid}/${id}`;
+        await remove(ref(db, path));
 
         setAgendamentos((prev) => prev.filter((a) => a.id !== id));
-        await carregarAgendamentos();
-        Alert.alert("Sucesso", "Agendamento excluído (se encontrado).");
-      } catch (error: any) {
-        console.error("Erro ao excluir agendamento:", error);
-        Alert.alert("Erro", String(error?.message ?? error));
+        Alert.alert("Sucesso", "Agendamento excluído com sucesso!");
+      } catch (error) {
+        console.error("Erro ao excluir:", error);
+        Alert.alert("Erro", "Falha ao excluir agendamento.");
       } finally {
         setLoading(false);
       }
     };
 
-    // fallback no web (Alert.alert pode não abrir no navegador)
     if (Platform.OS === "web") {
-      console.log("Usando confirm() no web");
-      if (window.confirm("Tem certeza que deseja excluir este agendamento?")) {
+      if (window.confirm("Deseja realmente excluir este agendamento?")) {
         executarExclusao();
-      } else {
-        console.log("Exclusão cancelada (web)");
       }
       return;
     }
 
     Alert.alert(
       "Confirmar exclusão",
-      "Tem certeza que deseja excluir este agendamento?",
+      "Deseja realmente excluir este agendamento?",
       [
         { text: "Cancelar", style: "cancel" },
         { text: "Excluir", style: "destructive", onPress: executarExclusao },
-      ],
-      { cancelable: true }
+      ]
     );
   };
-// ...existing code...
 
-   useEffect(() => {
+  useEffect(() => {
     carregarAgendamentos();
     const unsubscribe = navigation.addListener("focus", carregarAgendamentos);
     return unsubscribe;
   }, []);
-
 
   // --------------------------
   // EDITAR
@@ -180,7 +135,7 @@ export default function AgendamentosScreen() {
   };
 
   // --------------------------
-  // IR PARA TELA AGENDAR
+  // NOVO AGENDAMENTO
   // --------------------------
   const irParaAgendar = () => {
     navigation.navigate("Agendar");
@@ -192,10 +147,21 @@ export default function AgendamentosScreen() {
   const renderAgendamento = ({ item }: { item: Agendamento }) => (
     <View style={styles.agendamentoCard}>
       <View style={styles.agendamentoInfo}>
-        <Text style={styles.agendamentoNome}>{item.nomeCliente}</Text>
-        <Text style={styles.agendamentoServico}>{item.servico}</Text>
-        <Text style={styles.agendamentoHora}>Hor�rio: {item.horario}</Text>
-        <Text style={styles.agendamentoHora}>Data: {item.data}</Text>
+        <Text style={styles.agendamentoNome}>
+          Cliente: {item.nomeCliente}
+        </Text>
+        <Text style={styles.agendamentoPet}>
+          Pet: {item.nomePet}
+        </Text>
+        <Text style={styles.agendamentoServico}>
+          Serviço: {item.servico}
+        </Text>
+        <Text style={styles.agendamentoHora}>
+          Horário: {item.horario}
+        </Text>
+        <Text style={styles.agendamentoHora}>
+          Data: {item.data}
+        </Text>
       </View>
 
       <View style={styles.agendamentoBotoes}>
@@ -219,7 +185,7 @@ export default function AgendamentosScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Meus Agendamentos</Text>
+        <Text style={styles.title}>Agendamentos - PetShop</Text>
 
         <TouchableOpacity
           style={styles.botaoNovoAgendamento}
@@ -232,11 +198,11 @@ export default function AgendamentosScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color="#3572ff" />
         </View>
       ) : agendamentos.length === 0 ? (
         <View style={styles.vazioContainer}>
-          <MaterialIcons name="event-busy" size={64} color="#666" />
+          <MaterialIcons name="pets" size={64} color="#666" />
           <Text style={styles.vazioTexto}>Nenhum agendamento encontrado</Text>
         </View>
       ) : (
@@ -261,17 +227,15 @@ const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   header: {
-    backgroundColor: "#c7c7c7ff",
+    backgroundColor: "#3572ff",
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
   },
-  title: { fontSize: 24, fontWeight: "bold", color: "#fff", marginBottom: 15 },
+  title: { fontSize: 22, fontWeight: "bold", color: "#fff", marginBottom: 15 },
   botaoNovoAgendamento: {
     flexDirection: "row",
-    backgroundColor: "#3572ffff",
+    backgroundColor: "#0039e4",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -280,20 +244,21 @@ const styles = StyleSheet.create({
   botaoNovoTexto: { color: "#fff", fontWeight: "bold", marginLeft: 8 },
   listContainer: { padding: 15, paddingBottom: 30 },
   agendamentoCard: {
-    backgroundColor: "#e1ccccff",
+    backgroundColor: "#f2f2f2",
     borderRadius: 12,
     padding: 15,
     marginBottom: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderLeftWidth: 4,
-    borderLeftColor: "#000000ff",
+    borderLeftWidth: 5,
+    borderLeftColor: "#3572ff",
   },
   agendamentoInfo: { flex: 1, marginRight: 10 },
   agendamentoNome: { fontSize: 16, fontWeight: "bold", color: "#000" },
-  agendamentoServico: { color: "#000", marginBottom: 6 },
-  agendamentoHora: { color: "#000" },
+  agendamentoPet: { color: "#444", marginBottom: 4 },
+  agendamentoServico: { color: "#555", marginBottom: 6 },
+  agendamentoHora: { color: "#555" },
   agendamentoBotoes: { flexDirection: "row", gap: 8 },
   botaoIcon: {
     width: 36,
@@ -306,5 +271,5 @@ const styles = StyleSheet.create({
   botaoExcluir: { backgroundColor: "#f44336" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   vazioContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  vazioTexto: { color: "#fff", marginTop: 15, fontSize: 18 },
+  vazioTexto: { color: "#666", marginTop: 15, fontSize: 18 },
 });
